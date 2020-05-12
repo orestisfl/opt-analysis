@@ -1,4 +1,3 @@
 [submodule "Deadpool"]
 	path = Deadpool
-	url = https://github.com/orestisfl/Deadpool
-	branch = master
+	url = https://github.com/SideChannelMarvels/Deadpool
