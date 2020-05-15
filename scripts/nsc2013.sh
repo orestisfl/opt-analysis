@@ -5,6 +5,7 @@ set -x
 [[ -z $OPT_TO_USE ]] && exit 1
 
 runs=200
+experiments=100
 mkdir -p results
 
 clang-10 --version
@@ -22,7 +23,7 @@ clang-10 /tmp/tmp.bc -o /tmp/target
 mkdir out
 cd out
 cp ../wbt_noenc ./
-opt-analysis -j --daredevil --progress --inputs $runs --experiments 30 nsc2013 /tmp/target
+opt-analysis -j --daredevil --progress --inputs $runs --experiments $experiments nsc2013 /tmp/target
 
 cd ..
-zip -r "results/O-$OPT_TO_USE-$runs.zip" out/
+zip -r "results/O-$OPT_TO_USE-$experiments-$runs.zip" out/
