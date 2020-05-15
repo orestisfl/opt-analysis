@@ -3,7 +3,7 @@ from ubuntu:18.04
 # Install basic stuff
 run apt-get update -qq \
     && apt-get full-upgrade -y \
-    && apt-get install -y automake build-essential cmake git software-properties-common wget
+    && apt-get install -y automake build-essential cmake git software-properties-common wget zip
 
 # Install llvm 10.x
 # See https://apt.llvm.org/
@@ -39,9 +39,8 @@ run cd sidechannel \
     && make -j \
     && make install
 
-run cd sidechannel \
-    && git clone --depth 1 https://github.com/SideChannelMarvels/Deadpool \
-    && apt-get install -y python python-pip
-
 # Extra stuff for the script & environment
-run apt-get install -qqy python-tqdm ipython zip
+add . /opt-analysis
+run apt-get install -qqy python-pip python-tqdm ipython \
+    && cd /opt-analysis \
+    && pip install -U .

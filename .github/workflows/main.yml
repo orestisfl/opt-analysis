@@ -1,0 +1,31 @@
+name: CI
+
+# Run on push with specific tag
+on:
+  push:
+    tags:
+      - experiment*
+
+jobs:
+  dockerbuild:
+    name: Docker Build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        # XXX: run script and double check optimizations
+        opt_flag: [O0,O1,early-cse,early-cse-memssa,functionattrs,globalopt,inferattrs,instcombine,licm,loop-rotate,mem2reg,reassociate,simplifycfg,sroa,]
+    env:
+      OPT_TO_USE: ${{ matrix.opt_flag }}
+    steps:
+      - uses: actions/checkout@v1
+        with:
+          submodules: true
+      - name: Run docker build
+        run: docker build -t opt_analysis:latest .
+      - name: Run experiment
+        run: docker run -e "OPT_TO_USE=$OPT_TO_USE" -v "$PWD:/workspace" --workdir /workspace opt_analysis:latest scripts/nsc2013.sh
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v1
+        with:
+          name: results
+          path: results
