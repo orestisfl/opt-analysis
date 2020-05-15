@@ -3,9 +3,10 @@ set -e
 set -x
 
 [[ -z $OPT_TO_USE ]] && exit 1
+[[ -z $OPT_BATCH ]] && exit 1
 
 runs=200
-experiments=100
+experiments=25
 mkdir -p results
 
 clang-10 --version
@@ -26,4 +27,4 @@ cp ../wbt_noenc ./
 opt-analysis -j --daredevil --progress --inputs $runs --experiments $experiments nsc2013 /tmp/target
 
 cd ..
-zip -r "results/O-$OPT_TO_USE-$experiments-$runs.zip" out/
+zip -r "results/$OPT_BATCH.O-$OPT_TO_USE-$experiments-$runs.zip" out/

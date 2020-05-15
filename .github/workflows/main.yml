@@ -11,11 +11,15 @@ jobs:
     name: Docker Build
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         # XXX: run script and double check optimizations
         opt_flag: [O0,O1,early-cse,early-cse-memssa,functionattrs,globalopt,inferattrs,instcombine,licm,loop-rotate,mem2reg,reassociate,simplifycfg,sroa,]
+        # To avoid timeouts, split to 4 batches with 25 experiments each
+        batch: [0, 1, 2, 3,]
     env:
       OPT_TO_USE: ${{ matrix.opt_flag }}
+      OPT_BATCH: ${{ matrix.batch }}
     steps:
       - uses: actions/checkout@v1
         with:
@@ -23,7 +27,7 @@ jobs:
       - name: Run docker build
         run: docker build -t opt_analysis:latest .
       - name: Run experiment
-        run: docker run -e "OPT_TO_USE=$OPT_TO_USE" -v "$PWD:/workspace" --workdir /workspace opt_analysis:latest scripts/nsc2013.sh
+        run: docker run -e "OPT_TO_USE=$OPT_TO_USE" -e "OPT_BATCH=$OPT_BATCH" -v "$PWD:/workspace" --workdir /workspace opt_analysis:latest scripts/nsc2013.sh
       - name: Upload artifacts
         uses: actions/upload-artifact@v1
         with:
