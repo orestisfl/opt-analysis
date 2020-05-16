@@ -17,9 +17,11 @@ jobs:
         opt_flag: [O0,O1,O2,O3,Oz,correlated-propagation,early-cse,early-cse-memssa,functionattrs,globalopt,gvn,inferattrs,instcombine,jump-threading,licm,loop-rotate,mem2reg,reassociate,simplifycfg,sroa,]
         # To avoid timeouts, split to 4 batches with 25 experiments each
         batch: [0, 1, 2, 3,]
+        inputs: [100, 200,]
     env:
       OPT_TO_USE: ${{ matrix.opt_flag }}
       OPT_BATCH: ${{ matrix.batch }}
+      OPT_RUNS: ${{ matrix.inputs }}
     steps:
       - uses: actions/checkout@v1
         with:
@@ -27,7 +29,7 @@ jobs:
       - name: Run docker build
         run: docker build -t opt_analysis:latest .
       - name: Run experiment
-        run: docker run -e "OPT_TO_USE=$OPT_TO_USE" -e "OPT_BATCH=$OPT_BATCH" -v "$PWD:/workspace" --workdir /workspace opt_analysis:latest scripts/nsc2013.sh
+        run: docker run -e "OPT_TO_USE=$OPT_TO_USE" -e "OPT_BATCH=$OPT_BATCH" -e "OPT_RUNS=$OPT_RUNS" -v "$PWD:/workspace" --workdir /workspace opt_analysis:latest scripts/nsc2013.sh
       - name: Upload artifacts
         uses: actions/upload-artifact@v1
         with:

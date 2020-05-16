@@ -2,10 +2,11 @@
 set -e
 set -x
 
+# XXX: could be $1, $2, …
 [[ -z $OPT_TO_USE ]] && exit 1
 [[ -z $OPT_BATCH ]] && exit 1
+[[ -z $OPT_RUNS ]] && exit 1
 
-runs=200
 experiments=25
 mkdir -p results
 
@@ -24,7 +25,7 @@ clang-10 /tmp/tmp.bc -o /tmp/target
 mkdir out
 cd out
 cp ../wbt_noenc ./
-opt-analysis -j --daredevil --progress --inputs $runs --experiments $experiments nsc2013 /tmp/target
+opt-analysis -j --daredevil --progress --inputs $OPT_RUNS --experiments $experiments nsc2013 /tmp/target
 
 cd ..
-zip -r "results/$OPT_BATCH.O-$OPT_TO_USE-$experiments-$runs.zip" out/
+zip -r "results/$OPT_BATCH.O-$OPT_TO_USE-$experiments-$OPT_RUNS.zip" out/
