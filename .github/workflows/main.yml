@@ -14,7 +14,8 @@ jobs:
       fail-fast: false
       matrix:
         # XXX: run script and double check optimizations
-        opt_flag: [O0,O1,O2,O3,Oz,correlated-propagation,early-cse,early-cse-memssa,functionattrs,globalopt,gvn,inferattrs,instcombine,jump-threading,licm,loop-rotate,mem2reg,reassociate,simplifycfg,sroa,]
+        # opt_flag: [O0,O1,O2,O3,Oz,correlated-propagation,early-cse,early-cse-memssa,functionattrs,globalopt,gvn,inferattrs,instcombine,jump-threading,licm,loop-rotate,mem2reg,reassociate,simplifycfg,sroa,]
+        opt_flag: [O0,O1,"-jump-threading -functionattrs -loop-rotate -correlated-propagation -licm"]
         # To avoid timeouts, split to 4 batches with 25 experiments each
         batch: [0, 1, 2, 3,]
         inputs: [100, 200,]
