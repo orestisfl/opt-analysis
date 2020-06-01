@@ -3,8 +3,8 @@ name: CI
 # Run on push with specific tag
 on:
   push:
-    tags:
-      - experiment*
+      branches:
+          - csmith
 
 jobs:
   dockerbuild:
@@ -13,22 +13,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # XXX: run script and double check optimizations
-        # opt_flag: [O0,O1,O2,O3,Oz,correlated-propagation,early-cse,early-cse-memssa,functionattrs,globalopt,gvn,inferattrs,instcombine,jump-threading,licm,loop-rotate,mem2reg,reassociate,simplifycfg,sroa,]
-        opt_flag: [O0,O1,"-jump-threading -functionattrs -loop-rotate -correlated-propagation -licm"]
-        # To avoid timeouts, split to 4 batches with 25 experiments each
-        batch: [0, 1, 2, 3,]
-        inputs: [100, 200,]
+        batch: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99]
     steps:
-      - uses: actions/checkout@v1
-        with:
-          submodules: true
+      - uses: actions/checkout@v2
       - name: Run docker build
-        run: docker build -t opt_analysis:latest .
+        run: docker build -t opt_analysis:csmith .
       - name: Run experiment
-        run: docker run -e "OPT_TO_USE=${{ matrix.opt_flag }}" -e "OPT_BATCH=${{ matrix.batch }}" -e "OPT_RUNS=${{ matrix.inputs }}" -v "$PWD:/workspace" --workdir /workspace opt_analysis:latest scripts/nsc2013.sh
+        run: docker run -v "$PWD:/workspace" --workdir /workspace opt_analysis:csmith scripts/csmith.sh ${{ matrix.batch }}
       - name: Upload artifacts
         uses: actions/upload-artifact@v1
         with:
-          name: results
-          path: results
+          name: ${{ matrix.batch }}
+          path: ${{ matrix.batch }}
