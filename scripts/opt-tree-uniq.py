@@ -2,7 +2,7 @@
 import os
 from itertools import combinations
 from multiprocessing import Pool, cpu_count
-from subprocess import check_output, run
+from subprocess import CalledProcessError, check_output, run
 
 from termcolor import colored
 
@@ -81,10 +81,14 @@ def call_opt_worker(args):
 
 def call_opt(num, fname, opts):
     out = f"{num}.bc"
-    run(
-        ["opt", "-strip", fname, "-o", out] + [f"-{opt}" for opt in opts], check=True,
-    )
-    return Bitcode(out, opts)
+    try:
+        run(
+            ["opt", "-strip", fname, "-o", out] + [f"-{opt}" for opt in opts],
+            check=True,
+        )
+        return Bitcode(out, opts)
+    except CalledProcessError as e:
+        print("Exception:", e.__dict__)
 
 
 if __name__ == "__main__":
