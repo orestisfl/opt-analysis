@@ -4,7 +4,6 @@ from itertools import combinations
 from subprocess import check_output, run
 
 from termcolor import colored
-from tqdm import tqdm
 
 ALL_OPTS = "aa adce alignment-from-assumptions argpromotion basicaa bdce block-freq branch-prob called-value-propagation callsite-splitting constmerge correlated-propagation deadargelim demanded-bits div-rem-pairs domtree dse early-cse early-cse-memssa elim-avail-extern float2int functionattrs globaldce globalopt globals-aa gvn indvars inferattrs inline instcombine instsimplify ipsccp jump-threading lazy-block-freq lazy-branch-prob lazy-value-info lcssa lcssa-verification libcalls-shrinkwrap licm loop-accesses loop-deletion loop-distribute loop-idiom loop-load-elim loop-rotate loop-simplify loop-sink loop-unroll loop-unswitch loop-vectorize loops lower-expect mem2reg memcpyopt memdep memoryssa mldst-motion opt-remark-emitter pgo-memop-opt postdomtree prune-eh reassociate rpo-functionattrs scalar-evolution sccp scoped-noalias simplifycfg slp-vectorizer speculative-execution sroa strip-dead-prototypes tailcallelim tbaa".split(
     " "
@@ -44,12 +43,12 @@ def main(fname):
 
     # Out of all possible flags, which produce a unique transformation?
     opts = []
-    for opt in tqdm(ALL_OPTS, desc="Filter all opts"):
+    for opt in ALL_OPTS:
         result = uniq_opt(fname, [opt], results)
         if result is not None:
             opts.append(opt)
 
-    for r in tqdm(range(1, len(opts) + 1)):
+    for r in range(1, len(opts) + 1):
         for curr_opts in combinations(opts, r):
             uniq_opt(fname, curr_opts, results)
 
@@ -60,10 +59,10 @@ def uniq_opt(fname, opts, results):
     if result is None:
         return None
     if result in results:
-        tqdm.write(colored("Skip: " + str(result), "red"))
+        print(colored("Skip: " + str(result), "red"))
         result.clean()
         return None
-    tqdm.write(colored("Done: " + str(result), "green"))
+    print(colored("Done: " + str(result), "green"))
     results.add(result)
     return result
 

@@ -3,7 +3,7 @@ from ubuntu:18.04
 # Install basic stuff
 run apt-get update -qq \
     && apt-get full-upgrade -y \
-    && apt-get install -y automake build-essential cmake git software-properties-common wget zip python3-termcolor python3-tqdm
+    && apt-get install -y automake build-essential cmake git software-properties-common wget zip python3-termcolor
 
 # Install llvm 10.x
 # See https://apt.llvm.org/
