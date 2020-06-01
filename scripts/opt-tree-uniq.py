@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import os
 from itertools import combinations
+from multiprocessing import Pool, cpu_count
 from subprocess import check_output, run
 
 from termcolor import colored
@@ -8,7 +9,6 @@ from termcolor import colored
 ALL_OPTS = "aa adce alignment-from-assumptions argpromotion basicaa bdce block-freq branch-prob called-value-propagation callsite-splitting constmerge correlated-propagation deadargelim demanded-bits div-rem-pairs domtree dse early-cse early-cse-memssa elim-avail-extern float2int functionattrs globaldce globalopt globals-aa gvn indvars inferattrs inline instcombine instsimplify ipsccp jump-threading lazy-block-freq lazy-branch-prob lazy-value-info lcssa lcssa-verification libcalls-shrinkwrap licm loop-accesses loop-deletion loop-distribute loop-idiom loop-load-elim loop-rotate loop-simplify loop-sink loop-unroll loop-unswitch loop-vectorize loops lower-expect mem2reg memcpyopt memdep memoryssa mldst-motion opt-remark-emitter pgo-memop-opt postdomtree prune-eh reassociate rpo-functionattrs scalar-evolution sccp scoped-noalias simplifycfg slp-vectorizer speculative-execution sroa strip-dead-prototypes tailcallelim tbaa".split(
     " "
 )
-num = 0
 
 
 class Bitcode:
@@ -39,38 +39,47 @@ class Bitcode:
 def main(fname):
     # Add both the original bitcode and its optimization without any extra flags
     results = {Bitcode(fname)}
-    uniq_opt(fname, [], results)
+    add_result(call_opt(1, fname, []), results)
 
     # Out of all possible flags, which produce a unique transformation?
+    idx_start = 2
     opts = []
     for opt in ALL_OPTS:
-        result = uniq_opt(fname, [opt], results)
+        result = add_result(call_opt(idx_start, fname, [opt]), results)
         if result is not None:
             opts.append(opt)
+        idx_start += 1
 
-    for r in range(1, len(opts) + 1):
-        for curr_opts in combinations(opts, r):
-            uniq_opt(fname, curr_opts, results)
+    with Pool(cpu_count() + 1) as p:
+        for r in range(1, len(opts) + 1):
+            args = [
+                (idx, fname, curr_opts)
+                for idx, curr_opts in enumerate(combinations(opts, r), start=idx_start)
+            ]
+            idx_start += len(args)
+
+            for result in p.imap_unordered(call_opt_worker, args):
+                add_result(result, results)
 
 
-def uniq_opt(fname, opts, results):
-    result = call_opt(fname, opts)
-
+def add_result(result, results):
     if result is None:
         return None
     if result in results:
         print(colored("Skip: " + str(result), "red"))
         result.clean()
         return None
+
     print(colored("Done: " + str(result), "green"))
     results.add(result)
     return result
 
 
-def call_opt(fname, opts):
-    global num
-    num += 1
+def call_opt_worker(args):
+    return call_opt(*args)
 
+
+def call_opt(num, fname, opts):
     out = f"{num}.bc"
     run(
         ["opt", "-strip", fname, "-o", out] + [f"-{opt}" for opt in opts], check=True,
