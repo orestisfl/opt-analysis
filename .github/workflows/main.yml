@@ -14,13 +14,48 @@ jobs:
       fail-fast: false
       matrix:
         batch: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39]
+    env:
+        filename: ${{ matrix.batch }}
     steps:
       - uses: actions/checkout@v2
-      - name: Run docker build
-        run: docker build -t opt_analysis:csmith .
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+      - name: Install csmith
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get full-upgrade -y
+          sudo apt-get install -y software-properties-common curl libtool build-essential automake
+
+          curl https://apt.llvm.org/llvm-snapshot.gpg.key -o llvm.key
+          sudo apt-key add llvm.key
+          echo 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-10 main' | sudo tee -a /etc/apt/sources.list
+          sudo apt-get update -qq
+          sudo apt-get install -qq clang-10 llvm-10
+
+          git clone --depth 1 https://github.com/csmith-project/csmith
+          cd csmith
+          autoreconf -fi
+          ./configure --prefix=/usr
+          sudo make install -j10
+          sudo make install -C runtime install -j
         # TODO: just random combinations
       - name: Run experiment
-        run: docker run -v "$PWD:/workspace" --workdir /workspace opt_analysis:csmith scripts/csmith.sh ${{ matrix.batch }}
+        run: |
+          export PATH="/usr/lib/llvm-10/bin:$PATH"
+          pip install termcolor
+
+          mkdir "$filename"
+          cd "$filename"
+
+          csmith -o "$filename.c"
+
+          clang-10 --version
+          # Create the bitcode of the file to be optimized
+          clang-10 -c -emit-llvm -O0 -Xclang -disable-O0-optnone -I ../csmith/runtime "$filename.c" -o "base-$filename.bc"
+
+          timeout 5h ../scripts/opt-tree-uniq.py "base-$filename.bc" 2>&1 | tee "output-$filename.log" || echo "$filename: Exit code: $?"
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
