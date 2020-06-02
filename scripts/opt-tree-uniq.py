@@ -26,6 +26,11 @@ class Bitcode:
         os.remove(self.fname + ".bc")
         os.remove(self.fname + ".out")
 
+    def exec(self):
+        return (
+            check_output(["timeout", "5", "./" + self.fname + ".out"]).decode().strip()
+        )
+
     def __eq__(self, other):
         return self._md5 == other._md5
 
@@ -38,16 +43,19 @@ class Bitcode:
 
 def main(fname):
     # Add both the original bitcode and its optimization without any extra flags
-    results = {Bitcode(fname)}
-    add_result(call_opt(1, fname, []), results)
+    result = Bitcode(fname)
+    results = {result}
+    expected = result.exec()
+    add_result(call_opt(1, fname, []), results, expected)
 
     # Out of all possible flags, which produce a unique transformation?
     idx_start = 2
     opts = []
     for opt in ALL_OPTS:
-        result = add_result(call_opt(idx_start, fname, [opt]), results)
-        if result is not None:
+        result = call_opt(idx_start, fname, [opt])
+        if add_result(result, results, expected):
             opts.append(opt)
+        result.clean()
         idx_start += 1
 
     with Pool(cpu_count() + 1) as p:
@@ -58,21 +66,22 @@ def main(fname):
             ]
             idx_start += len(args)
 
-            for result in p.imap_unordered(call_opt_worker, args):
-                add_result(result, results)
+            for result in filter(None, p.imap_unordered(call_opt_worker, args)):
+                add_result(result, results, expected)
+                result.clean()
 
 
-def add_result(result, results):
-    if result is None:
-        return None
+def add_result(result, results, expected):
     if result in results:
         print(colored("Skip: " + str(result), "red"))
-        result.clean()
-        return None
+        return False
+
+    if result.exec() != expected:
+        raise RuntimeError(f"{result} differs!")
 
     print(colored("Done: " + str(result), "green"))
     results.add(result)
-    return result
+    return True
 
 
 def call_opt_worker(args):

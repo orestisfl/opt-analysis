@@ -13,6 +13,4 @@ clang-10 --version
 # Create the bitcode of the file to be optimized
 clang-10 -c -emit-llvm -O0 -Xclang -disable-O0-optnone -I /csmith/runtime "$1.c" -o base.bc
 
-../scripts/opt-tree-uniq.py base.bc
-
-find . -name '*.out' -exec {} \; | sort | uniq > all.stdout
+timeout 5h ../scripts/opt-tree-uniq.py base.bc 2>&1 | tee output.log || echo "Exit code: $?"
