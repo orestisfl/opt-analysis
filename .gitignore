@@ -244,5 +244,8 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
+venv/
+.idea/
+
 # Custom
 results/
