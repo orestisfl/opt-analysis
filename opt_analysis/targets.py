@@ -1,12 +1,12 @@
 from deadpool_dca import TracerGrind
 
 
-def _chess2016_processinput(iblock, blocksize):
+def _ches2016_processinput(iblock, blocksize):
     p = "%0*x" % (2 * blocksize, iblock)
     return None, [p[j * 2 : (j + 1) * 2] for j in range(len(p) // 2)]
 
 
-def _chess2016_processoutput(output, _):
+def _ches2016_processoutput(output, _):
     return int(
         "".join(
             [x for x in output.split("\n") if x.find("OUTPUT") == 0][0][10:].split(" ")
@@ -41,12 +41,12 @@ def _kryptologik_processoutput(output, blocksize):
 
 TARGETS = {
     "kryptologik": (_kryptologik_processinput, _kryptologik_processoutput),
-    "chess2016": (_chess2016_processinput, _chess2016_processoutput),
+    "ches2016": (_ches2016_processinput, _ches2016_processoutput),
     "nsc2013": (_nsc2013_processinput, _nsc2013_processoutput),
 }
 BIN2DAREDEVIL = {
     "kryptologik": {"algorithm": "AES", "position": "LUT/AES_AFTER_SBOX"},
-    "chess2016": {
+    "ches2016": {
         "attack_sbox": {"algorithm": "AES", "position": "LUT/AES_AFTER_SBOX"},
         "attack_multinv": {"algorithm": "AES", "position": "LUT/AES_AFTER_MULTINV",},
     },
@@ -54,11 +54,11 @@ BIN2DAREDEVIL = {
 }
 CONFIGS = {
     "kryptologik": "mem_addr1_rw1",
-    "chess2016": "mem_addr1_rw1",
+    "ches2016": "mem_addr1_rw1",
     "nsc2013": "mem_data_rw1",
 }
 KEYS = {
     "kryptologik": "0D9BE960C438FF85F656BD48B78A0EE2",
-    "chess2016": "dec1a551f1eddec0de4b1dae5c0de511",
+    "ches2016": "dec1a551f1eddec0de4b1dae5c0de511",
     "nsc2013": "4b45595f4b45595f4b45595f4b45595f",
 }

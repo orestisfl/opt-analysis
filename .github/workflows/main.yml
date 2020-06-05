@@ -17,6 +17,7 @@ jobs:
         opt_flag: [1,2,3,4]
         # To avoid timeouts, split to 4 batches with 25 experiments each
         batch: [0, 1, 2, 3]
+        target: [nsc2013, ches2016]
     steps:
       - uses: actions/checkout@v1
         with:
@@ -24,7 +25,7 @@ jobs:
       - name: Run docker build
         run: docker build -t opt_analysis:latest .
       - name: Run experiment
-        run: docker run -e "OPT_TO_USE=${{ matrix.opt_flag }}" -e "OPT_BATCH=${{ matrix.batch }}" -e "OPT_RUNS=200" -v "$PWD:/workspace" --workdir /workspace opt_analysis:latest scripts/nsc2013.sh
+        run: docker run -e "OPT_TO_USE=${{ matrix.opt_flag }}" -e "OPT_BATCH=${{ matrix.batch }}" -e "OPT_RUNS=200" -v "$PWD:/workspace" --workdir /workspace opt_analysis:latest scripts/${{ matrix.target }}.sh
       - name: Upload artifacts
         uses: actions/upload-artifact@v1
         with:
