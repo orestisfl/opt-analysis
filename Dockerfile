@@ -3,7 +3,8 @@ from ubuntu:18.04
 # Install basic stuff
 run apt-get update -qq \
     && apt-get full-upgrade -y \
-    && apt-get install -y automake build-essential cmake git software-properties-common wget zip
+    && apt-get install -y automake build-essential cmake git software-properties-common wget zip \
+                          python python-pip python-tqdm ipython
 
 # Install llvm 10.x
 # See https://apt.llvm.org/
@@ -39,8 +40,6 @@ run cd sidechannel \
     && make -j \
     && make install
 
-# Extra stuff for the script & environment
+# Install package globally
 add . /opt-analysis
-run apt-get install -qqy python-pip python-tqdm ipython \
-    && cd /opt-analysis \
-    && pip install -U .
+run cd /opt-analysis && pip install -U .
