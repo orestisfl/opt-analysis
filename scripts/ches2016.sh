@@ -10,7 +10,7 @@ set -x
 # https://stackoverflow.com/a/6022431
 opts="$(sed "${OPT_TO_USE}q;d" opts.conf)"
 
-experiments=20
+experiments=15
 
 clang-10 --version
 
