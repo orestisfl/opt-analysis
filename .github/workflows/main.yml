@@ -14,10 +14,10 @@ jobs:
       fail-fast: true
       matrix:
         # XXX: run script and double check optimizations
-        opt_flag: [1,2,3,4,5,6,7,8]
+        opt_flag: [1,2,3,4,5,6,7,8,9]
         # To avoid timeouts, split to 4 batches with 25 experiments each
         batch: [0, 1, 2, 3]
-        target: [nsc2013, ches2016]
+        target: [nsc2013,]
     steps:
       - uses: actions/checkout@v1
         with:
